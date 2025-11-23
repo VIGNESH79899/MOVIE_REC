@@ -1,0 +1,1183 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --netflix-red: #E50914;
+    --netflix-black: #141414;
+    --netflix-dark: #0a0a0a;
+    --netflix-gray: #2f2f2f;
+    --netflix-light-gray: #808080;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--netflix-black);
+    color: var(--text-primary);
+    overflow-x: hidden;
+}
+
+/* Header */
+.header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+    padding: 20px 0;
+    transition: background 0.3s ease;
+}
+
+.header.scrolled {
+    background: var(--netflix-black);
+}
+
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    color: var(--netflix-red);
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+
+.nav {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 8px 16px;
+    transition: color 0.3s ease;
+}
+
+.nav-btn:hover {
+    color: var(--netflix-red);
+}
+
+.parallel-universe-toggle {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 25px;
+    padding: 10px 20px;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.parallel-universe-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+}
+
+.parallel-universe-toggle.active {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(245, 87, 108, 0.5); }
+    50% { box-shadow: 0 0 40px rgba(245, 87, 108, 0.8); }
+}
+
+/* Container */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 100px 50px 50px;
+}
+
+/* Section */
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.hero-title {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, var(--netflix-red) 0%, #ff6b6b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 30px;
+}
+
+/* Search */
+.search-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    width: 500px;
+    padding: 15px 20px;
+    background: var(--netflix-gray);
+    border: 2px solid transparent;
+    border-radius: 5px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--netflix-red);
+    background: var(--netflix-dark);
+}
+
+.search-btn {
+    padding: 15px 30px;
+    background: var(--netflix-red);
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+    background: #f40612;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4);
+}
+
+/* Filters */
+.filters {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.filter-select {
+    padding: 10px 20px;
+    background: var(--netflix-gray);
+    border: 2px solid transparent;
+    border-radius: 5px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--netflix-red);
+}
+
+/* CineSound Section */
+.feature-section {
+    background: linear-gradient(135deg, rgba(229, 9, 20, 0.1) 0%, rgba(20, 20, 20, 0.5) 100%);
+    padding: 30px;
+    border-radius: 10px;
+    margin-bottom: 40px;
+    border: 1px solid rgba(229, 9, 20, 0.2);
+}
+
+.feature-title {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    color: var(--netflix-red);
+}
+
+.feature-description {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.cinesound-input-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.song-input {
+    flex: 1;
+    padding: 15px 20px;
+    background: var(--netflix-gray);
+    border: 2px solid transparent;
+    border-radius: 5px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.song-input:focus {
+    outline: none;
+    border-color: var(--netflix-red);
+}
+
+.cinesound-btn {
+    padding: 15px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cinesound-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.mood-display {
+    padding: 15px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 5px;
+    text-align: center;
+    font-size: 1.1rem;
+    color: #667eea;
+    min-height: 20px;
+}
+
+/* Movies Grid */
+.movies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.movie-card {
+    background: var(--netflix-gray);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.movie-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+}
+
+.movie-poster {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    background: var(--netflix-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.movie-info {
+    padding: 15px;
+}
+
+.movie-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 10px;
+}
+
+.movie-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+}
+
+.movie-rating {
+    background: var(--netflix-red);
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.movie-genre {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.movie-description {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.movie-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.ott-badge {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.movie-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.watch-btn {
+    background: var(--netflix-red);
+    color: white;
+    font-weight: 600;
+}
+
+.watch-btn:hover {
+    background: #f40612;
+}
+
+.recommend-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.recommend-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.like-btn {
+    background: transparent;
+    border: 2px solid var(--netflix-red);
+    color: var(--netflix-red);
+    padding: 8px;
+    width: 40px;
+}
+
+.like-btn:hover {
+    background: var(--netflix-red);
+    color: white;
+}
+
+/* Recommendations Section */
+.recommendations-section {
+    margin-top: 50px;
+}
+
+.recommendations-title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: var(--netflix-red);
+}
+
+/* Cinematic DNA Profile */
+.profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.profile-title {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.profile-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+}
+
+.dna-chart {
+    background: var(--netflix-gray);
+    padding: 40px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+}
+
+.dna-loading {
+    color: var(--text-secondary);
+}
+
+.dna-bar-container {
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.dna-bar-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.dna-bar-bg {
+    width: 100%;
+    height: 30px;
+    background: var(--netflix-dark);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.dna-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--netflix-red), #ff6b6b);
+    transition: width 1s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    font-weight: 700;
+}
+
+.dna-description {
+    font-size: 1.3rem;
+    color: var(--netflix-red);
+    margin-bottom: 20px;
+    padding: 20px;
+    background: rgba(229, 9, 20, 0.1);
+    border-radius: 10px;
+}
+
+.dna-stats {
+    color: var(--text-secondary);
+    margin-bottom: 30px;
+}
+
+.refresh-btn {
+    padding: 15px 40px;
+    background: var(--netflix-red);
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+    background: #f40612;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4);
+}
+
+/* Chatbot */
+.chatbot-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 2000;
+}
+
+.chatbot-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--netflix-red) 0%, #ff6b6b 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 5px 20px rgba(229, 9, 20, 0.5);
+    transition: all 0.3s ease;
+}
+
+.chatbot-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 30px rgba(229, 9, 20, 0.7);
+}
+
+.chat-icon {
+    font-size: 1.8rem;
+}
+
+.chatbot-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 350px;
+    height: 500px;
+    background: var(--netflix-gray);
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chatbot-window.active {
+    display: flex;
+}
+
+.chatbot-header {
+    background: var(--netflix-red);
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chatbot-header h3 {
+    font-size: 1.1rem;
+}
+
+.close-chat {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.bot-message, .user-message {
+    padding: 12px 15px;
+    border-radius: 10px;
+    max-width: 80%;
+    animation: messageSlide 0.3s ease;
+}
+
+@keyframes messageSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bot-message {
+    background: var(--netflix-dark);
+    align-self: flex-start;
+}
+
+.user-message {
+    background: var(--netflix-red);
+    align-self: flex-end;
+}
+
+.chatbot-input-container {
+    padding: 15px;
+    background: var(--netflix-dark);
+    display: flex;
+    gap: 10px;
+}
+
+.chatbot-input {
+    flex: 1;
+    padding: 10px;
+    background: var(--netflix-gray);
+    border: none;
+    border-radius: 5px;
+    color: var(--text-primary);
+}
+
+.chatbot-input:focus {
+    outline: none;
+}
+
+.send-btn {
+    padding: 10px 20px;
+    background: var(--netflix-red);
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.send-btn:hover {
+    background: #f40612;
+}
+
+/* Glitch Overlay */
+.glitch-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.glitch-overlay.active {
+    opacity: 1;
+    animation: glitch 0.5s infinite;
+}
+
+@keyframes glitch {
+    0%, 100% {
+        background: transparent;
+    }
+    25% {
+        background: rgba(245, 87, 108, 0.05);
+        box-shadow: inset 0 0 100px rgba(245, 87, 108, 0.1);
+    }
+    50% {
+        background: rgba(102, 126, 234, 0.05);
+        box-shadow: inset 0 0 100px rgba(102, 126, 234, 0.1);
+    }
+    75% {
+        background: rgba(240, 147, 251, 0.05);
+        box-shadow: inset 0 0 100px rgba(240, 147, 251, 0.1);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-content {
+        padding: 0 20px;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .container {
+        padding: 150px 20px 50px;
+    }
+
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+
+    .search-container {
+        flex-direction: column;
+    }
+
+    .filters {
+        flex-direction: column;
+    }
+
+    .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .chatbot-window {
+        width: 300px;
+    }
+}
+
+/* ---------- NAV USER AREA ---------- */
+.nav-user-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 24px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    background: #e50914;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 0.95rem;
+}
+
+.user-name {
+    font-size: 0.95rem;
+}
+
+/* ========== AUTH PAGES (LOGIN / REGISTER) ========== */
+
+.auth-body {
+    font-family: 'Roboto', sans-serif;
+    background: radial-gradient(circle at top, #e50914 0%, #141414 55%, #000 100%);
+    color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-page {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 15px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 18px;
+    padding: 28px 26px 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+}
+
+.flix-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.6rem;
+    letter-spacing: 3px;
+    color: #e50914;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.auth-heading {
+    text-align: center;
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+}
+
+.auth-subtext {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #b3b3b3;
+    margin-bottom: 18px;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 12px 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #141414;
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: #e50914;
+}
+
+.password-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-field input {
+    padding-right: 40px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #b3b3b3;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.toggle-password:hover {
+    color: #fff;
+}
+
+.password-strength {
+    margin: 4px 0 12px;
+    font-size: 0.8rem;
+    color: #b3b3b3;
+}
+
+.password-strength .strength-bar {
+    width: 100%;
+    height: 4px;
+    border-radius: 999px;
+    background: #333;
+    margin-bottom: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.password-strength .strength-bar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 20%;
+    background: #333;
+    transition: width 0.25s ease, background 0.25s ease;
+}
+
+/* strength levels */
+.password-strength[data-level="empty"] .strength-bar::after {
+    width: 5%;
+    background: #333;
+}
+
+.password-strength[data-level="weak"] .strength-bar::after {
+    width: 30%;
+    background: #e50914;
+}
+
+.password-strength[data-level="medium"] .strength-bar::after {
+    width: 60%;
+    background: #ffb300;
+}
+
+.password-strength[data-level="strong"] .strength-bar::after {
+    width: 85%;
+    background: #21d07a;
+}
+
+.password-strength[data-level="very-strong"] .strength-bar::after {
+    width: 100%;
+    background: linear-gradient(90deg, #21d07a, #66e0ff);
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #e50914, #ff6b6b);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.auth-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 18px rgba(229, 9, 20, 0.6);
+}
+
+.auth-switch-line {
+    margin-top: 14px;
+    font-size: 0.9rem;
+    color: #b3b3b3;
+    text-align: center;
+}
+
+.auth-switch-line a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-switch-line a:hover {
+    text-decoration: underline;
+}
+
+/* ========== USER MENU DROPDOWN (B) ========== */
+
+.nav-user-area {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-left: 24px;
+}
+
+.user-menu {
+    position: relative;
+}
+
+.user-menu-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    padding: 4px 8px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #e50914;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.user-menu-labels {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.1;
+}
+
+.user-name {
+    font-size: 0.95rem;
+}
+
+.user-role {
+    font-size: 0.7rem;
+    color: #b3b3b3;
+}
+
+.user-menu-caret {
+    font-size: 0.75rem;
+    color: #b3b3b3;
+}
+
+/* dropdown card */
+
+.user-dropdown {
+    position: absolute;
+    right: 0;
+    top: 120%;
+    width: 220px;
+    background: #181818;
+    border-radius: 14px;
+    padding: 10px 0;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 1500;
+}
+
+.user-dropdown.open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.user-dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px 4px;
+}
+
+.user-dropdown-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #e50914;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.user-dropdown-name {
+    font-size: 0.95rem;
+}
+
+.user-dropdown-meta {
+    font-size: 0.75rem;
+    color: #b3b3b3;
+}
+
+.user-dropdown-divider {
+    margin: 8px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-dropdown-item {
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: #ffffff;
+}
+
+.user-dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* small tweak for typing indicator */
+
+.typing-indicator p {
+    opacity: 0.7;
+    font-style: italic;
+}
+
+.genre-pref-group {
+    margin-top: 16px;
+}
+
+.genre-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.genre-label-small {
+    font-size: 0.8rem;
+    color: var(--netflix-light-gray);
+}
+
+.genre-hint {
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.genre-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.genre-chip {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.genre-chip:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.genre-chip.active {
+    background: linear-gradient(135deg, #e50914, #b30000);
+    box-shadow: 0 0 12px rgba(229, 9, 20, 0.6);
+    transform: translateY(-1px);
+}
+
+/* Preference Chips */
+.preference-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.preference-chip {
+    padding: 8px 18px;
+    background: #1a1a1a;
+    border: 2px solid #333;
+    border-radius: 25px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    color: #eee;
+    transition: all 0.25s ease-in-out;
+}
+
+.preference-chip:hover {
+    border-color: #ff3b3b;
+    color: #ff3b3b;
+}
+
+/* Selected State */
+.preference-chip.active {
+    background: #ff0000;
+    border-color: #ff0000;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(255, 0, 0, 0.6);
+}
+
+/* Save Button Matching Style */
+.save-preference-btn {
+    margin-top: 12px;
+    display: inline-block;
+    padding: 10px 26px;
+    background: #ff0000;
+    border: none;
+    border-radius: 28px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.save-preference-btn:hover {
+    background: #cc0000;
+}

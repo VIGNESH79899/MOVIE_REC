@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineFlix - AI-Powered Movie Recommendations</title>
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="logo">CINEFLIX</h1>
+
+            <nav class="nav">
+
+                <!-- Left side nav -->
+                <button class="nav-btn" onclick="showSection('home')">Home</button>
+                <button class="nav-btn" onclick="showSection('profile')">My Cinematic DNA</button>
+
+                <button class="nav-btn parallel-universe-toggle" onclick="toggleParallelUniverse()">
+                    <span id="universe-mode-text">🌌 Parallel Universe OFF</span>
+                </button>
+
+                <!-- Right side -->
+                <div class="nav-user-area">
+
+                    <!-- Hidden login/signup (we redirect to /login before this anyway) -->
+                    <button class="nav-btn hidden-auth-btn" id="login-btn" style="display:none" onclick="window.location.href='/login'">Login</button>
+                    <button class="nav-btn hidden-auth-btn" id="signup-btn" style="display:none" onclick="window.location.href='/register'">Sign Up</button>
+
+                    <!-- User dropdown -->
+                    <div class="user-menu" id="user-menu">
+                        <button class="user-menu-toggle" id="user-menu-toggle" type="button">
+                            <span class="user-avatar" id="user-avatar">U</span>
+                            <span class="user-name" id="username-display">{{ session.get('username', 'User') }}</span>
+                            <span class="user-menu-caret">▾</span>
+                        </button>
+
+                        <!-- Dropdown elements -->
+                        <div class="user-dropdown" id="user-dropdown">
+                            <div class="user-dropdown-item" onclick="showSection('profile')">
+                                My Profile
+                            </div>
+                            <div class="user-dropdown-item" onclick="logoutUser()">
+                                Logout
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+
+        <!-- Home Section -->
+        <section id="home-section" class="section active">
+            
+            <!-- Hero -->
+            <div class="hero">
+                <h2 class="hero-title">Discover Your Next Favorite Movie</h2>
+                <p class="hero-subtitle">AI-powered recommendations tailored just for you</p>
+
+                <!-- Search -->
+                <div class="search-container">
+                    <input type="text"
+                           id="search-input"
+                           class="search-input"
+                           placeholder="Search movies, actors, directors...">
+                    <button class="search-btn" onclick="searchMovies()">Search</button>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters">
+                    <select id="genre-filter" class="filter-select" onchange="filterMovies()">
+                        <option value="">All Genres</option>
+                        <option value="Action">Action</option>
+                        <option value="Comedy">Comedy</option>
+                        <option value="Drama">Drama</option>
+                        <option value="Horror">Horror</option>
+                        <option value="Romance">Romance</option>
+                        <option value="Sci-Fi">Sci-Fi</option>
+                        <option value="Thriller">Thriller</option>
+                        <option value="Animation">Animation</option>
+                        <option value="Fantasy">Fantasy</option>
+                        <option value="Family">Family</option>
+                        <option value="Adventure">Adventure</option>
+                    </select>
+
+                    <select id="ott-filter" class="filter-select" onchange="filterMovies()">
+                        <option value="">All Platforms</option>
+                        <option value="Netflix">Netflix</option>
+                        <option value="Prime Video">Prime Video</option>
+                        <option value="Disney+">Disney+</option>
+                        <option value="HBO Max">HBO Max</option>
+                        <option value="Hulu">Hulu</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- CineSound -->
+            <div class="feature-section cinesound-section">
+                <h3 class="feature-title">🎧 CineSound - Song to Movie Magic</h3>
+                <p class="feature-description">Enter a song and discover movies that match its emotional vibe</p>
+
+                <div class="cinesound-input-container">
+                    <!-- fixed so Gmail auto-fill doesn’t appear -->
+                    <input type="text"
+                           id="song-input"
+                           name="cinesound-song"
+                           autocomplete="off"
+                           class="song-input"
+                           placeholder='Try "Fix You - Coldplay" or "Bohemian Rhapsody"'>
+
+                    <button class="cinesound-btn" onclick="analyzeSong()">Find Movies</button>
+                </div>
+
+                <div id="mood-display" class="mood-display"></div>
+            </div>
+
+            <!-- Movies -->
+            <div id="movies-container" class="movies-grid"></div>
+
+            <!-- Recommendations -->
+            <div id="recommendations-section" class="recommendations-section" style="display:none;">
+                <h3 class="recommendations-title">Recommended For You</h3>
+                <div id="recommendations-grid" class="movies-grid"></div>
+            </div>
+
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile-section" class="section">
+            <div class="profile-container">
+                <h2 class="profile-title">Your Cinematic DNA</h2>
+                <p class="profile-subtitle">A unique portrait of your movie personality</p>
+
+                <!-- Preferences -->
+                <div class="preferences-section">
+                    <h3 class="preferences-title">Your Favorite Genres</h3>
+                    <p class="preferences-subtitle">Tap to toggle your mood & preferences anytime.</p>
+
+                    <div class="preference-chips">
+                        <div class="preference-chip" data-genre="Action">Action</div>
+                        <div class="preference-chip" data-genre="Comedy">Comedy</div>
+                        <div class="preference-chip" data-genre="Drama">Drama</div>
+                        <div class="preference-chip" data-genre="Horror">Horror</div>
+                        <div class="preference-chip" data-genre="Romance">Romance</div>
+                        <div class="preference-chip" data-genre="Sci-Fi">Sci-Fi</div>
+                        <div class="preference-chip" data-genre="Thriller">Thriller</div>
+                        <div class="preference-chip" data-genre="Animation">Animation</div>
+                        <div class="preference-chip" data-genre="Fantasy">Fantasy</div>
+                        <div class="preference-chip" data-genre="Family">Family</div>
+                        <div class="preference-chip" data-genre="Adventure">Adventure</div>
+                    </div>
+
+                    <button class="save-preference-btn" onclick="savePreferences()">Save Preferences</button>
+                    <div class="prefs-status" id="prefs-status"></div>
+                </div>
+
+                <!-- Cinematic DNA chart -->
+                <div class="dna-chart" id="dna-chart">
+                    <div class="dna-loading">Loading your profile...</div>
+                </div>
+
+                <div class="dna-description" id="dna-description"></div>
+                <div class="dna-stats" id="dna-stats"></div>
+
+                <button class="refresh-btn" onclick="loadCinematicDNA()">Refresh Profile</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Chatbot -->
+    <div class="chatbot-container" id="chatbot-container">
+        <div class="chatbot-icon" onclick="toggleChatbot()">
+            💬
+        </div>
+
+        <div class="chatbot-window" id="chatbot-window">
+            <div class="chatbot-header">
+                <h3>CineFlix AI Assistant</h3>
+                <button class="close-chat" onclick="toggleChatbot()">×</button>
+            </div>
+
+            <div class="chatbot-messages" id="chatbot-messages">
+                <div class="bot-message">
+                    <p>Hi! I'm your movie assistant. Ask me anything! 🎬</p>
+                </div>
+            </div>
+
+            <div class="chatbot-input-container">
+                <input type="text" id="chatbot-input" class="chatbot-input" placeholder="Ask me about movies...">
+                <button class="send-btn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Glitch Parallel Universe -->
+    <div class="glitch-overlay" id="glitch-overlay"></div>
+
+    <!-- JS Scripts -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+</body>
+</html>

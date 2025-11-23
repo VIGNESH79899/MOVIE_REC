@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineFlix - Login</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body class="auth-body">
+
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="flix-logo">CINEFLIX</div>
+        <h2 class="auth-heading">Welcome back</h2>
+        <p class="auth-subtext">Sign in to continue your movie journey.</p>
+
+        <form class="auth-form" onsubmit="handleLogin(event)">
+            <input type="email"
+                   id="login-email"
+                   placeholder="Email address"
+                   autocomplete="email"
+                   required>
+
+            <input type="password"
+                   id="login-password"
+                   placeholder="Password"
+                   autocomplete="current-password"
+                   required>
+
+            <!-- 🎯 Optional: update favorite genres on login -->
+            <div class="genre-pref-group">
+                <label class="genre-label">
+                    Update your favorite genres
+                    <span class="genre-label-small">(optional)</span>
+                </label>
+                <div class="genre-chips" id="login-genres">
+                    <button type="button" class="genre-chip" data-genre="Action">Action</button>
+                    <button type="button" class="genre-chip" data-genre="Comedy">Comedy</button>
+                    <button type="button" class="genre-chip" data-genre="Drama">Drama</button>
+                    <button type="button" class="genre-chip" data-genre="Horror">Horror</button>
+                    <button type="button" class="genre-chip" data-genre="Romance">Romance</button>
+                    <button type="button" class="genre-chip" data-genre="Sci-Fi">Sci-Fi</button>
+                    <button type="button" class="genre-chip" data-genre="Thriller">Thriller</button>
+                    <button type="button" class="genre-chip" data-genre="Animation">Animation</button>
+                    <button type="button" class="genre-chip" data-genre="Fantasy">Fantasy</button>
+                </div>
+                <p class="genre-hint">If you skip this, we’ll use your existing preferences.</p>
+            </div>
+
+            <button type="submit" class="auth-btn">Sign In</button>
+        </form>
+
+        <p class="auth-switch-line">
+            New to CineFlix?
+            <a href="{{ url_for('register_page') }}">Create an account</a>
+        </p>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>
