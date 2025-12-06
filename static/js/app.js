@@ -1,5 +1,3 @@
-// static/js/app.js
-
 // ========== GLOBAL STATE ==========
 let allMovies = [];
 let parallelUniverseMode = false;
@@ -15,13 +13,17 @@ let selectedGenres = new Set();
 
 // ========== INIT ==========
 document.addEventListener('DOMContentLoaded', async () => {
-    await checkAuthStatus();         // Make sure nav reflects login state
+    await checkAuthStatus();
+
+    // Make sure nav reflects login state
     setupHeaderScrollEffect();
     setupEventListeners();
-    setupPreferenceChips();          // Enable chip toggling (on profile page)
+    setupPreferenceChips();
 
-    restoreFiltersAndSearch();       // Restore last search/filters if any
-    await loadMovies();              // Load movie catalogue (uses prefs on backend)
+    // Restore last search/filters if any
+    restoreFiltersAndSearch();
+    // Load movie catalogue (uses prefs on backend)
+    await loadMovies();
 });
 
 // ========== AUTH / NAV UI ==========
@@ -41,34 +43,34 @@ async function checkAuthStatus() {
 }
 
 function updateNavForAuth() {
-    const loginBtn     = document.getElementById('login-btn');
-    const signupBtn    = document.getElementById('signup-btn');
-    const userMenu     = document.getElementById('user-menu');
+    const loginBtn = document.getElementById('login-btn');
+    const signupBtn = document.getElementById('signup-btn');
+    const userMenu = document.getElementById('user-menu');
     const usernameSpan = document.getElementById('username-display');
-    const avatarSpan   = document.getElementById('user-avatar');
+    const avatarSpan = document.getElementById('user-avatar');
 
     if (!loginBtn || !signupBtn || !userMenu) return;
 
     if (isLoggedIn && window.currentUserName) {
         // Show user menu, hide auth buttons
-        loginBtn.style.display  = 'none';
+        loginBtn.style.display = 'none';
         signupBtn.style.display = 'none';
-        userMenu.style.display  = 'inline-block';
+        userMenu.style.display = 'inline-block';
 
-        const name    = window.currentUserName;
+        const name = window.currentUserName;
         const initial = name.charAt(0).toUpperCase();
 
         if (usernameSpan) usernameSpan.textContent = name;
-        if (avatarSpan)   avatarSpan.textContent   = initial;
+        if (avatarSpan) avatarSpan.textContent = initial;
     } else {
         // Not logged in (we usually won't be here on index because of backend redirect)
-        loginBtn.style.display  = 'inline-block';
+        loginBtn.style.display = 'inline-block';
         signupBtn.style.display = 'inline-block';
-        userMenu.style.display  = 'none';
+        userMenu.style.display = 'none';
     }
 
     // Dropdown open/close
-    const toggle   = document.getElementById('user-menu-toggle');
+    const toggle = document.getElementById('user-menu-toggle');
     const dropdown = document.getElementById('user-dropdown');
 
     if (toggle && dropdown) {
@@ -113,7 +115,7 @@ function setupHeaderScrollEffect() {
 // ========== GENERIC EVENT LISTENERS ==========
 function setupEventListeners() {
     const searchInput = document.getElementById('search-input');
-    const songInput   = document.getElementById('song-input');
+    const songInput = document.getElementById('song-input');
 
     if (searchInput) {
         searchInput.addEventListener('keypress', (e) => {
@@ -135,9 +137,9 @@ function getFilterStorageKey() {
 }
 
 function saveFiltersToStorage() {
-    const q     = document.getElementById('search-input')?.value || '';
+    const q = document.getElementById('search-input')?.value || '';
     const genre = document.getElementById('genre-filter')?.value || '';
-    const ott   = document.getElementById('ott-filter')?.value || '';
+    const ott = document.getElementById('ott-filter')?.value || '';
 
     const payload = { search: q, genre, ott };
     try {
@@ -163,10 +165,10 @@ function restoreFiltersAndSearch() {
         const o = document.getElementById('ott-filter');
 
         if (s && typeof search === 'string') s.value = search;
-        if (g && typeof genre  === 'string') g.value = genre;
-        if (o && typeof ott    === 'string') o.value = ott;
+        if (g && typeof genre === 'string') g.value = genre;
+        if (o && typeof ott === 'string') o.value = ott;
 
-        searchMovies();  // run search with restored filters
+        searchMovies(); // run search with restored filters
     } catch (err) {
         console.error('Error restoring filters:', err);
     }
@@ -231,11 +233,11 @@ function displayMovies(movies) {
 
 function getOTTPlatformURL(platform) {
     const urls = {
-        'Netflix':    'www.netflix.com',
-        'Prime Video':'www.primevideo.com',
-        'Disney+':    'www.disneyplus.com',
-        'HBO Max':    'www.hbomax.com',
-        'Hulu':       'www.hulu.com'
+        'Netflix': 'www.netflix.com',
+        'Prime Video': 'www.primevideo.com',
+        'Disney+': 'www.disneyplus.com',
+        'HBO Max': 'www.hbomax.com',
+        'Hulu': 'www.hulu.com'
     };
     return urls[platform] || 'www.google.com/search?q=' + encodeURIComponent(platform);
 }
@@ -243,21 +245,24 @@ function getOTTPlatformURL(platform) {
 // ========== SEARCH / FILTER ==========
 async function searchMovies() {
     const searchQuery = document.getElementById('search-input')?.value || '';
-    const genre       = document.getElementById('genre-filter')?.value || '';
-    const ott         = document.getElementById('ott-filter')?.value || '';
+    const genre = document.getElementById('genre-filter')?.value || '';
+    const ott = document.getElementById('ott-filter')?.value || '';
 
     try {
         const params = new URLSearchParams();
         if (searchQuery) params.append('search', searchQuery);
-        if (genre)       params.append('genre', genre);
-        if (ott)         params.append('ott', ott);
+        if (genre) params.append('genre', genre);
+        if (ott) params.append('ott', ott);
 
         const response = await fetch(`/api/movies?${params.toString()}`);
-        const movies   = await response.json();
+        const movies = await response.json();
         displayMovies(movies);
 
+        // Hide both rec sections when doing a normal search
         const recSection = document.getElementById('recommendations-section');
         if (recSection) recSection.style.display = 'none';
+        const csSection = document.getElementById('cinesound-results');
+        if (csSection) csSection.style.display = 'none';
 
         saveFiltersToStorage();
     } catch (error) {
@@ -314,9 +319,9 @@ async function trackView(title, genre) {
 }
 
 function displayRecommendations(movies, forTitle) {
-    const section      = document.getElementById('recommendations-section');
+    const section = document.getElementById('recommendations-section');
     const titleElement = document.querySelector('.recommendations-title');
-    const container    = document.getElementById('recommendations-grid');
+    const container = document.getElementById('recommendations-grid');
 
     if (!section || !titleElement || !container) return;
 
@@ -363,14 +368,18 @@ function displayRecommendations(movies, forTitle) {
 
     section.style.display = 'block';
     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Hide CineSound results when showing "Similar" recommendations
+    const csSection = document.getElementById('cinesound-results');
+    if (csSection) csSection.style.display = 'none';
 }
 
 // Parallel Universe toggle
 function toggleParallelUniverse() {
     parallelUniverseMode = !parallelUniverseMode;
 
-    const button   = document.querySelector('.parallel-universe-toggle');
-    const overlay  = document.getElementById('glitch-overlay');
+    const button = document.querySelector('.parallel-universe-toggle');
+    const overlay = document.getElementById('glitch-overlay');
     const modeText = document.getElementById('universe-mode-text');
 
     if (!button || !overlay || !modeText) return;
@@ -395,15 +404,15 @@ async function analyzeSong() {
     if (!requireLogin()) return;
 
     const songInput = document.getElementById('song-input');
-    const songName  = songInput.value.trim();
+    const songName = songInput.value.trim();
 
     if (!songName) {
-        alert('Please enter a song name');
+        alert('Please enter a song name, lyrics, or description');
         return;
     }
 
     const moodDisplay = document.getElementById('mood-display');
-    moodDisplay.textContent = '🎵 Analyzing song mood...';
+    moodDisplay.textContent = '🎵 Analyzing song vibe...';
 
     try {
         const response = await fetch('/api/cinesound', {
@@ -414,16 +423,32 @@ async function analyzeSong() {
 
         const data = await response.json();
 
-        if (data.recommendations && data.recommendations.length > 0) {
-            moodDisplay.textContent =
-                `🎵 Detected Mood: ${data.detected_mood.toUpperCase()} | Song: "${data.song}"`;
+        if (data.status !== 'success') {
+            moodDisplay.textContent = '❌ Error analyzing song.';
+            return;
+        }
 
-            const section      = document.getElementById('recommendations-section');
-            const titleElement = document.querySelector('.recommendations-title');
-            const container    = document.getElementById('recommendations-grid');
+        const keywords = Array.isArray(data.keywords) ? data.keywords : [];
+        const kwText = keywords.length
+            ? ` | Keywords: ${keywords.join(', ')}`
+            : '';
 
-            titleElement.textContent = `🎧 Movies matching "${songName}"`;
+        moodDisplay.textContent =
+            `🎵 Detected Mood: ${data.detected_mood.toUpperCase()} | Song: "${data.song}"${kwText}`;
 
+        // render movies in dedicated CineSound section
+        const section = document.getElementById('cinesound-results');
+        const titleElement = document.getElementById('cinesound-title');
+        const container = document.getElementById('cinesound-grid');
+
+        if (!section || !titleElement || !container) return;
+
+        titleElement.textContent = `🎧 Movies matching "${songName}"`;
+
+        if (!data.recommendations || data.recommendations.length === 0) {
+            container.innerHTML =
+                '<div style="text-align:center;padding:30px;color:#aaa;">No movies found for this song.</div>';
+        } else {
             container.innerHTML = data.recommendations.map(movie => `
                 <div class="movie-card">
                     <div class="movie-poster">
@@ -458,12 +483,14 @@ async function analyzeSong() {
                     </div>
                 </div>
             `).join('');
-
-            section.style.display = 'block';
-            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-            moodDisplay.textContent = '❌ No movies found for this song.';
         }
+
+        // show CineSound section and hide normal recommendations
+        section.style.display = 'block';
+        const recSection = document.getElementById('recommendations-section');
+        if (recSection) recSection.style.display = 'none';
+
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (error) {
         console.error('Error analyzing song:', error);
         moodDisplay.textContent = '❌ Error analyzing song. Please try again.';
@@ -495,31 +522,31 @@ async function likeMovie(title, genre) {
 async function loadCinematicDNA() {
     if (!requireLogin()) return;
 
-    const chart       = document.getElementById('dna-chart');
+    const chart = document.getElementById('dna-chart');
     const description = document.getElementById('dna-description');
-    const stats       = document.getElementById('dna-stats');
+    const stats = document.getElementById('dna-stats');
 
     chart.innerHTML = '<div class="dna-loading">Loading your profile...</div>';
 
     try {
         const response = await fetch('/api/profile');
-        const data     = await response.json();
+        const data = await response.json();
 
         const profile = data.profile;
         const categoryLabels = {
-            'sci_fi_dreamer':    'Sci-Fi Dreamer',
+            'sci_fi_dreamer': 'Sci-Fi Dreamer',
             'romantic_idealist': 'Romantic Idealist',
             'action_enthusiast': 'Action Enthusiast',
-            'comedy_lover':      'Comedy Lover',
-            'drama_seeker':      'Drama Seeker'
+            'comedy_lover': 'Comedy Lover',
+            'drama_seeker': 'Drama Seeker'
         };
 
         const colors = {
-            'sci_fi_dreamer':    'linear-gradient(90deg,#667eea,#764ba2)',
+            'sci_fi_dreamer': 'linear-gradient(90deg,#667eea,#764ba2)',
             'romantic_idealist': 'linear-gradient(90deg,#f093fb,#f5576c)',
             'action_enthusiast': 'linear-gradient(90deg,#fa709a,#fee140)',
-            'comedy_lover':      'linear-gradient(90deg,#30cfd0,#330867)',
-            'drama_seeker':      'linear-gradient(90deg,#a8edea,#fed6e3)'
+            'comedy_lover': 'linear-gradient(90deg,#30cfd0,#330867)',
+            'drama_seeker': 'linear-gradient(90deg,#a8edea,#fed6e3)'
         };
 
         chart.innerHTML = Object.entries(profile).map(([key, value]) => `
@@ -535,7 +562,7 @@ async function loadCinematicDNA() {
         `).join('');
 
         description.textContent = data.description;
-        stats.textContent       = 'Based on your viewing patterns and interactions';
+        stats.textContent = 'Based on your viewing patterns and interactions';
     } catch (error) {
         console.error('Error loading profile:', error);
         chart.innerHTML = '<div class="dna-loading">Error loading profile. Please try again.</div>';

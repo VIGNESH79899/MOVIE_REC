@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CineFlix - AI-Powered Movie Recommendations</title>
-    
-    <!-- Main CSS -->
+
+    <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
     <!-- Header -->
@@ -18,20 +19,23 @@
 
             <nav class="nav">
 
-                <!-- Left side nav -->
+                <!-- Left nav -->
                 <button class="nav-btn" onclick="showSection('home')">Home</button>
                 <button class="nav-btn" onclick="showSection('profile')">My Cinematic DNA</button>
 
+                <!-- Parallel Universe -->
                 <button class="nav-btn parallel-universe-toggle" onclick="toggleParallelUniverse()">
                     <span id="universe-mode-text">🌌 Parallel Universe OFF</span>
                 </button>
 
-                <!-- Right side -->
+                <!-- User / Login -->
                 <div class="nav-user-area">
 
-                    <!-- Hidden login/signup (we redirect to /login before this anyway) -->
-                    <button class="nav-btn hidden-auth-btn" id="login-btn" style="display:none" onclick="window.location.href='/login'">Login</button>
-                    <button class="nav-btn hidden-auth-btn" id="signup-btn" style="display:none" onclick="window.location.href='/register'">Sign Up</button>
+                    <!-- Hidden login/signup (backend redirects) -->
+                    <button class="nav-btn hidden-auth-btn" id="login-btn"
+                            style="display:none" onclick="window.location.href='/login'">Login</button>
+                    <button class="nav-btn hidden-auth-btn" id="signup-btn"
+                            style="display:none" onclick="window.location.href='/register'">Sign Up</button>
 
                     <!-- User dropdown -->
                     <div class="user-menu" id="user-menu">
@@ -41,14 +45,9 @@
                             <span class="user-menu-caret">▾</span>
                         </button>
 
-                        <!-- Dropdown elements -->
                         <div class="user-dropdown" id="user-dropdown">
-                            <div class="user-dropdown-item" onclick="showSection('profile')">
-                                My Profile
-                            </div>
-                            <div class="user-dropdown-item" onclick="logoutUser()">
-                                Logout
-                            </div>
+                            <div class="user-dropdown-item" onclick="showSection('profile')">My Profile</div>
+                            <div class="user-dropdown-item" onclick="logoutUser()">Logout</div>
                         </div>
                     </div>
 
@@ -57,12 +56,15 @@
         </div>
     </header>
 
+
+
+
     <!-- Main Container -->
     <div class="container">
 
         <!-- Home Section -->
         <section id="home-section" class="section active">
-            
+
             <!-- Hero -->
             <div class="hero">
                 <h2 class="hero-title">Discover Your Next Favorite Movie</h2>
@@ -70,9 +72,7 @@
 
                 <!-- Search -->
                 <div class="search-container">
-                    <input type="text"
-                           id="search-input"
-                           class="search-input"
+                    <input type="text" id="search-input" class="search-input"
                            placeholder="Search movies, actors, directors...">
                     <button class="search-btn" onclick="searchMovies()">Search</button>
                 </div>
@@ -105,36 +105,52 @@
                 </div>
             </div>
 
-            <!-- CineSound -->
+
+
+
+            <!-- CineSound Section -->
             <div class="feature-section cinesound-section">
                 <h3 class="feature-title">🎧 CineSound - Song to Movie Magic</h3>
                 <p class="feature-description">Enter a song and discover movies that match its emotional vibe</p>
 
                 <div class="cinesound-input-container">
-                    <!-- fixed so Gmail auto-fill doesn’t appear -->
-                    <input type="text"
-                           id="song-input"
-                           name="cinesound-song"
-                           autocomplete="off"
-                           class="song-input"
+                    <input type="text" id="song-input" name="cinesound-song"
+                           autocomplete="off" class="song-input"
                            placeholder='Try "Fix You - Coldplay" or "Bohemian Rhapsody"'>
-
                     <button class="cinesound-btn" onclick="analyzeSong()">Find Movies</button>
                 </div>
 
                 <div id="mood-display" class="mood-display"></div>
             </div>
 
-            <!-- Movies -->
+
+
+            <!-- CineSound Results (NEW!) -->
+            <section id="cinesound-results" class="recommendations-section" style="display:none;">
+                <h3 id="cinesound-title" class="recommendations-title">🎧 CineSound Results</h3>
+                <div id="cinesound-grid" class="movies-grid"></div>
+            </section>
+
+
+
+            <!-- Normal Movies -->
             <div id="movies-container" class="movies-grid"></div>
 
-            <!-- Recommendations -->
+
+
+            <!-- Similar / Parallel Recommendations -->
             <div id="recommendations-section" class="recommendations-section" style="display:none;">
                 <h3 class="recommendations-title">Recommended For You</h3>
                 <div id="recommendations-grid" class="movies-grid"></div>
             </div>
 
         </section>
+
+
+
+
+
+
 
         <!-- Profile Section -->
         <section id="profile-section" class="section">
@@ -165,7 +181,7 @@
                     <div class="prefs-status" id="prefs-status"></div>
                 </div>
 
-                <!-- Cinematic DNA chart -->
+                <!-- Cinematic DNA Graph -->
                 <div class="dna-chart" id="dna-chart">
                     <div class="dna-loading">Loading your profile...</div>
                 </div>
@@ -178,11 +194,12 @@
         </section>
     </div>
 
+
+
+
     <!-- Chatbot -->
     <div class="chatbot-container" id="chatbot-container">
-        <div class="chatbot-icon" onclick="toggleChatbot()">
-            💬
-        </div>
+        <div class="chatbot-icon" onclick="toggleChatbot()">💬</div>
 
         <div class="chatbot-window" id="chatbot-window">
             <div class="chatbot-header">
@@ -203,11 +220,15 @@
         </div>
     </div>
 
-    <!-- Glitch Parallel Universe -->
+
+
+    <!-- Glitch Overlay for Parallel Universe -->
     <div class="glitch-overlay" id="glitch-overlay"></div>
+
 
     <!-- JS Scripts -->
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+
 </body>
 </html>
