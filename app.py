@@ -8,7 +8,7 @@ from datetime import timedelta
 import os
 import sqlite3
 import google.generativeai as genai
-import json
+import json  # for storing preferences as JSON
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SESSION_SECRET', 'your-secret-key-here')
@@ -31,7 +31,6 @@ if GEMINI_API_KEY:
 # ========= MOVIE DATA =============
 movies_df = pd.read_csv('movies.csv')
 
-# --- content based for "Similar" + Parallel Universe ---
 movies_df['combined_features'] = (
     movies_df['genre'].fillna('') + ' ' +
     movies_df['description'].fillna('') + ' ' +
@@ -44,23 +43,8 @@ tfidf = TfidfVectorizer(stop_words='english')
 tfidf_matrix = tfidf.fit_transform(movies_df['combined_features'])
 cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
 
-# --- CineSound: soundtrack-based features ---
-if 'soundtrack_keywords' not in movies_df.columns:
-    movies_df['soundtrack_keywords'] = ''
-
-movies_df['soundtrack_text'] = (
-    movies_df['soundtrack_keywords'].fillna('') + ' ' +
-    movies_df['genre'].fillna('') + ' ' +
-    movies_df['description'].fillna('') + ' ' +
-    movies_df['keywords'].fillna('')
-)
-
-song_tfidf = TfidfVectorizer(stop_words='english')
-song_tfidf_matrix = song_tfidf.fit_transform(movies_df['soundtrack_text'])
 
 # ========= DATABASE =============
-
-
 def init_db():
     conn = sqlite3.connect('user_data.db')
     c = conn.cursor()
@@ -74,6 +58,7 @@ def init_db():
                   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)''')
 
     # Preferences table
+    # We will store favorite_genres per user_id but column name is session_id in DB.
     c.execute('''CREATE TABLE IF NOT EXISTS user_preferences
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   session_id TEXT,
@@ -96,11 +81,10 @@ def init_db():
 
 init_db()
 
+
 # ========= HELPER FUNCTIONS =============
-
-
 def get_recommendations(title, cosine_sim=cosine_sim):
-    """Content-based recommendations for 'Similar' button."""
+    """Content-based recommendations."""
     try:
         idx = movies_df[movies_df['title'].str.lower() == title.lower()].index[0]
         sim_scores = list(enumerate(cosine_sim[idx]))
@@ -141,22 +125,34 @@ def get_parallel_universe_recommendations(title):
         return []
 
 
-def analyze_song_mood_with_ai(song_text: str) -> str:
-    """Use Gemini (if available) to classify mood into one of 8 labels."""
+def get_song_to_movie_recommendations(song_name, mood='uplifting'):
+    mood_genre_mapping = {
+        'uplifting': ['Drama', 'Romance', 'Family'],
+        'melancholic': ['Drama', 'Romance'],
+        'energetic': ['Action', 'Adventure'],
+        'calm': ['Drama', 'Sci-Fi'],
+        'dark': ['Horror', 'Thriller'],
+        'happy': ['Comedy', 'Family', 'Animation'],
+        'sad': ['Drama', 'Romance'],
+        'intense': ['Thriller', 'Action']
+    }
+
+    target_genres = mood_genre_mapping.get(mood.lower(), ['Drama'])
+    recommended_movies = movies_df[movies_df['genre'].str.contains(
+        '|'.join(target_genres), case=False, na=False
+    )]
+    recommended_movies = recommended_movies.sample(min(10, len(recommended_movies)))
+    return recommended_movies.to_dict('records')
+
+
+def analyze_song_mood_with_ai(song_name):
     if not GEMINI_API_KEY or model is None:
         return 'uplifting'
 
     try:
-        prompt = f"""
-Analyze the emotional mood of this song or text:
-
-\"\"\"{song_text}\"\"\"
-
-Respond with ONLY ONE WORD from this list:
-uplifting, melancholic, energetic, calm, dark, happy, sad, intense.
-
-Just the word, nothing else.
-"""
+        prompt = f"""Analyze the emotional mood of the song "{song_name}". 
+Respond with ONLY ONE WORD from this list: uplifting, melancholic, energetic, calm, dark, happy, sad, intense.
+Just the word, nothing else."""
         response = model.generate_content(prompt)
 
         if hasattr(response, 'text') and response.text:
@@ -172,101 +168,10 @@ Just the word, nothing else.
         return 'uplifting'
 
 
-def extract_song_keywords_ai(song_text: str):
-    """
-    Use Gemini to extract 3–5 short keywords about the song's
-    emotional / musical vibe.  Fallback = simple keyword extraction.
-    """
-    # Fallback if no Gemini
-    if not GEMINI_API_KEY or model is None:
-        words = [w.lower() for w in song_text.split() if len(w) > 3]
-        seen = set()
-        keywords = []
-        for w in words:
-            if w not in seen:
-                seen.add(w)
-                keywords.append(w)
-            if len(keywords) >= 5:
-                break
-        return keywords
-
-    try:
-        prompt = f"""
-You will be given the name and/or lyrics/description of a song:
-
-\"\"\"{song_text}\"\"\"
-
-Return ONLY 3 to 5 short lowercase keywords that describe its
-emotional and musical vibe (for example: romantic, emotional, orchestral).
-
-Output format: a comma-separated list, no extra text.
-Example: romantic, emotional, orchestral
-"""
-        response = model.generate_content(prompt)
-
-        if hasattr(response, 'text') and response.text:
-            raw = response.text.strip().lower()
-            parts = [p.strip() for p in raw.split(',') if p.strip()]
-            return parts[:5]
-    except Exception as e:
-        print(f"Gemini API error in song keyword extraction: {e}")
-
-    # last fallback
-    return []
-
-
-def match_song_to_movies(song_text: str, mood: str):
-    """
-    Main CineSound matcher:
-    1) Use AI keywords + soundtrack_text with TF-IDF cosine similarity.
-    2) If that fails, fall back to simple mood→genre mapping.
-    """
-    keywords = extract_song_keywords_ai(song_text)
-
-    # --- 1) TF–IDF based match using soundtrack_text ---
-    if keywords:
-        try:
-            query = ' '.join(keywords)
-            query_vec = song_tfidf.transform([query])
-            sim_scores = cosine_similarity(query_vec, song_tfidf_matrix).flatten()
-
-            # If all scores are zero, TF-IDF didn't match anything useful
-            if sim_scores.max() > 0:
-                top_indices = sim_scores.argsort()[::-1][:10]
-                recs = movies_df.iloc[top_indices].to_dict('records')
-                return recs, keywords
-            else:
-                print("CineSound TF-IDF: all similarities are 0, using mood fallback.")
-        except Exception as e:
-            print(f"CineSound TF-IDF error: {e}")
-
-    # --- 2) Fallback: mood→genre mapping (previous logic) ---
-    mood_genre_mapping = {
-        'uplifting': ['Drama', 'Romance', 'Family'],
-        'melancholic': ['Drama', 'Romance'],
-        'energetic': ['Action', 'Adventure'],
-        'calm': ['Drama', 'Sci-Fi'],
-        'dark': ['Horror', 'Thriller'],
-        'happy': ['Comedy', 'Family', 'Animation'],
-        'sad': ['Drama', 'Romance'],
-        'intense': ['Thriller', 'Action']
-    }
-
-    target_genres = mood_genre_mapping.get(mood.lower(), ['Drama'])
-    fallback_movies = movies_df[movies_df['genre'].str.contains(
-        '|'.join(target_genres), case=False, na=False
-    )]
-    fallback_movies = fallback_movies.sample(min(10, len(fallback_movies)))
-
-    return fallback_movies.to_dict('records'), keywords
-
-
 def generate_cinematic_dna():
-    """Build a simple percentage profile for user's favorite genres."""
     conn = sqlite3.connect('user_data.db')
     c = conn.cursor()
-    c.execute(
-        'SELECT genre FROM user_interactions WHERE action IN ("view", "like")')
+    c.execute('SELECT genre FROM user_interactions WHERE action IN ("view", "like")')
     interactions = c.fetchall()
     conn.close()
 
@@ -309,8 +214,7 @@ def generate_cinematic_dna():
     total_percentage = sum(dna_profile.values())
     if total_percentage > 0:
         for key in dna_profile:
-            dna_profile[key] = int(
-                (dna_profile[key] / total_percentage) * 100)
+            dna_profile[key] = int((dna_profile[key] / total_percentage) * 100)
 
     return dna_profile
 
@@ -325,61 +229,55 @@ def log_interaction(action, movie_title, genre):
     conn.commit()
     conn.close()
 
-# ========= SIMPLE LOCAL CHATBOT (FALLBACK) =============
+
+# ✅ Preferences helpers (store list of genres per user_id in user_preferences table)
+def get_user_preferences(user_id: int):
+    conn = sqlite3.connect('user_data.db')
+    c = conn.cursor()
+    c.execute(
+        'SELECT favorite_genres FROM user_preferences WHERE session_id = ?',
+        (str(user_id),)
+    )
+    row = c.fetchone()
+    conn.close()
+
+    if row and row[0]:
+        try:
+            return json.loads(row[0])
+        except Exception:
+            return []
+    return []
 
 
-def simple_chatbot_reply(user_message: str) -> str:
-    """
-    Local, rule-based chatbot used when Gemini is unavailable or errors.
-    Uses the movies_df to give reasonable answers.
-    """
-    text = (user_message or '').strip()
-    if not text:
-        return "Tell me what mood you're in or what kind of movie you like, and I'll suggest something!"
+def save_user_preferences(user_id: int, genres_list):
+    conn = sqlite3.connect('user_data.db')
+    c = conn.cursor()
+    genres_json = json.dumps(genres_list)
 
-    lower = text.lower()
+    c.execute(
+        'SELECT id FROM user_preferences WHERE session_id = ?',
+        (str(user_id),)
+    )
+    row = c.fetchone()
 
-    # Greetings
-    if any(w in lower for w in ["hi", "hello", "hey", "hola"]):
-        return "Hi! I’m your CineFlix assistant. Ask me for movie recommendations, genres, or OTT suggestions. 🎬"
+    if row:
+        c.execute(
+            'UPDATE user_preferences SET favorite_genres = ? WHERE id = ?',
+            (genres_json, row[0])
+        )
+    else:
+        c.execute(
+            '''INSERT INTO user_preferences 
+               (session_id, favorite_genres, watch_history, ratings, chatbot_queries)
+               VALUES (?, ?, "", "", "")''',
+            (str(user_id), genres_json)
+        )
 
-    # If user asks for recommendation in general
-    if "recommend" in lower or "suggest" in lower:
-        # pick top rated 3 movies
-        top_movies = movies_df.sort_values(
-            by='imdb_rating', ascending=False
-        ).head(3)
-        titles = top_movies['title'].tolist()
-        return f"I recommend you try: {', '.join(titles)}."
-
-    # If user mentions a genre
-    genres = ["action", "comedy", "drama", "horror",
-              "romance", "sci-fi", "thriller", "animation", "fantasy", "family"]
-    mentioned = [g for g in genres if g in lower]
-    if mentioned:
-        g = mentioned[0]
-        subset = movies_df[movies_df['genre'].str.contains(
-            g, case=False, na=False)].sort_values(by='imdb_rating', ascending=False).head(3)
-        if not subset.empty:
-            titles = subset['title'].tolist()
-            return f"Here are some great {g.title()} movies: {', '.join(titles)}."
-
-    # Otherwise, treat text as search query over title/description
-    subset = movies_df[
-        movies_df['title'].str.contains(text, case=False, na=False) |
-        movies_df['description'].str.contains(text, case=False, na=False)
-    ].head(3)
-
-    if not subset.empty:
-        titles = subset['title'].tolist()
-        return f"I found these movies related to your query: {', '.join(titles)}."
-
-    return "I'm not sure I understood that, but you can ask me for movie recommendations by mood, genre, or actors!"
+    conn.commit()
+    conn.close()
 
 
 # ========= AUTH ROUTES (API) =============
-
-
 @app.route('/api/register', methods=['POST'])
 def api_register():
     data = request.json or {}
@@ -415,6 +313,7 @@ def api_register():
 def api_login():
     data = request.json or {}
 
+    # ✅ FIXED: use .strip(), NOT .trim(), and guard with (value or '')
     email = (data.get('email') or '').strip()
     password = (data.get('password') or '').strip()
 
@@ -453,9 +352,8 @@ def auth_status():
                         'username': session.get('username', '')})
     return jsonify({'logged_in': False})
 
-# ========= PREFERENCES API =============
 
-
+# ✅ SINGLE, clean preferences API (GET + POST)
 @app.route('/api/user/preferences', methods=['GET', 'POST'])
 def user_preferences():
     if 'user_id' not in session:
@@ -465,6 +363,7 @@ def user_preferences():
 
     if request.method == 'GET':
         prefs = get_user_preferences(user_id)
+        # JS supports both keys: genres / favorite_genres
         return jsonify({'status': 'success',
                         'genres': prefs,
                         'favorite_genres': prefs})
@@ -484,9 +383,8 @@ def user_preferences():
                     'genres': genres,
                     'favorite_genres': genres})
 
+
 # ========= PAGE ROUTES (HTML) =============
-
-
 @app.route('/')
 def home():
     if 'user_id' not in session:
@@ -507,9 +405,8 @@ def register_page():
         return redirect(url_for('home'))
     return render_template('register.html')
 
+
 # ========= MOVIE / FEATURE API =============
-
-
 @app.route('/api/movies')
 def get_movies():
     genre_filter = request.args.get('genre', '')
@@ -526,30 +423,24 @@ def get_movies():
             pattern = '|'.join([g for g in fav_genres if g])
             if pattern:
                 filtered_movies = filtered_movies[
-                    filtered_movies['genre'].str.contains(
-                        pattern, case=False, na=False)
+                    filtered_movies['genre'].str.contains(pattern, case=False, na=False)
                 ]
 
     if genre_filter:
         filtered_movies = filtered_movies[
-            filtered_movies['genre'].str.contains(
-                genre_filter, case=False, na=False)
+            filtered_movies['genre'].str.contains(genre_filter, case=False, na=False)
         ]
 
     if ott_filter:
         filtered_movies = filtered_movies[
-            filtered_movies['ott_platform'].str.contains(
-                ott_filter, case=False, na=False)
+            filtered_movies['ott_platform'].str.contains(ott_filter, case=False, na=False)
         ]
 
     if search_query:
         filtered_movies = filtered_movies[
-            filtered_movies['title'].str.contains(
-                search_query, case=False, na=False)
-            | filtered_movies['description'].str.contains(
-                search_query, case=False, na=False)
-            | filtered_movies['cast'].str.contains(
-                search_query, case=False, na=False)
+            filtered_movies['title'].str.contains(search_query, case=False, na=False)
+            | filtered_movies['description'].str.contains(search_query, case=False, na=False)
+            | filtered_movies['cast'].str.contains(search_query, case=False, na=False)
         ]
 
     return jsonify(filtered_movies.to_dict('records'))
@@ -589,28 +480,19 @@ def parallel_universe():
 @app.route('/api/cinesound', methods=['POST'])
 def cinesound():
     data = request.json or {}
-    song_text = (data.get('song') or '').strip()
+    song_name = data.get('song', '')
 
-    if not song_text:
+    if song_name:
+        mood = analyze_song_mood_with_ai(song_name)
+        recommendations = get_song_to_movie_recommendations(song_name, mood)
+
         return jsonify({
-            'status': 'error',
-            'message': 'Song name or lyrics are required.',
-            'recommendations': []
+            'recommendations': recommendations,
+            'detected_mood': mood,
+            'song': song_name
         })
 
-    # 1) detect mood from full text (name + lyrics/description)
-    mood = analyze_song_mood_with_ai(song_text) or 'uplifting'
-
-    # 2) match using soundtrack_keywords + fallback
-    recommendations, keywords = match_song_to_movies(song_text, mood)
-
-    return jsonify({
-        'status': 'success',
-        'song': song_text,
-        'detected_mood': mood,
-        'keywords': keywords,
-        'recommendations': recommendations
-    })
+    return jsonify({'recommendations': []})
 
 
 @app.route('/api/profile')
@@ -646,24 +528,23 @@ def chatbot():
     if 'session_id' not in session:
         session['session_id'] = os.urandom(16).hex()
 
-    # If Gemini isn't configured at all, immediately use local bot
     if not GEMINI_API_KEY or model is None:
-        reply = simple_chatbot_reply(user_message)
-        return jsonify({'response': reply})
+        return jsonify({
+            'response':
+                'The AI chatbot requires a Gemini API key. '
+                'You can still use search and filters to explore movies!'
+        })
 
     try:
         available_movies = movies_df['title'].tolist()[:20]
         movie_context = ', '.join(available_movies)
 
-        prompt = f"""You are a helpful movie recommendation assistant for a site called CineFlix.
-You have access to a database of movies including: {movie_context} and many more.
-
+        prompt = f"""You are a movie recommendation assistant. You have access to a database of movies including: {movie_context} and many more.
+        
 User: {user_message}
 
-Provide a helpful, conversational response about movies.
-If asked for recommendations, suggest 2-3 specific movies from the database.
-If asked about trivia, provide interesting facts.
-Keep responses concise (2-3 sentences)."""
+Provide a helpful, conversational response about movies. If asked for recommendations, suggest 2-3 specific movies from the database. 
+If asked about trivia, provide interesting facts. Keep responses concise (2-3 sentences)."""
 
         response = model.generate_content(prompt)
 
@@ -672,13 +553,13 @@ Keep responses concise (2-3 sentences)."""
         if hasattr(response, 'text') and response.text:
             return jsonify({'response': response.text})
         else:
-            # If Gemini answered strangely, fallback locally
-            reply = simple_chatbot_reply(user_message)
-            return jsonify({'response': reply})
+            return jsonify({'response': 'I could not generate a response. Please try again!'})
     except Exception as e:
         print(f"Chatbot error: {e}")
-        reply = simple_chatbot_reply(user_message)
-        return jsonify({'response': reply})
+        return jsonify({
+            'response':
+                'I encountered an error. Please try again later or use search & filters to discover movies!'
+        })
 
 
 @app.route('/api/view', methods=['POST'])
